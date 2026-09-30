@@ -59,6 +59,25 @@ install_docker() {
         return "$?"
     fi
 }
+
+generate_certs() {
+    CERT_DIR="./nginx/certificates"
+
+    if [ ! -f "$CERT_DIR/nginx.crt" ] || [ ! -f "$CERT_DIR/nginx.key" ]; then
+
+        echo "Generating SSL certificate..."
+        openssl req -x509 -nodes -days 365 \
+            -newkey rsa:2048 \
+            -keyout "$CERT_DIR/nginx.key" \
+            -out "$CERT_DIR/nginx.crt" \
+            -subj "/C=UAE/ST=Dubai/L=Dubai/O=Monitoring/OU=Dev/CN=monitoring.tenable.local" \
+            -addext "subjectAltName=DNS:monitoring.tenable.local"
+
+    else
+        echo "SSL certificate already exists."
+    fi
+}
+
 # banner
 show_banner
 
@@ -68,9 +87,9 @@ if [[ $EUID -ne 0 ]]; then
     echo "[-] This script must be run as root (or with sudo)." >&2
     exit 1
 fi
-## OS check
+## Check OS
 check_os
-## Config files check
+## Check config files
 check_config
 
 # Main Program
